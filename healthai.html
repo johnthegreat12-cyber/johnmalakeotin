@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthAI - Mental Health Support Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .new-chat-button {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .new-chat-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .conversations-list {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 12px 16px;
+            margin: 4px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .conversation-item:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateX(2px);
+        }
+
+        .conversation-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .conversation-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-preview {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-date {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .delete-conversation {
+            float: right;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 2px 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .conversation-item:hover .delete-conversation {
+            opacity: 1;
+        }
+
+        .delete-conversation:hover {
+            color: #ff4444;
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            margin-right: 8px;
+        }
+
+        .logo-symbol {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #ffb3e6 0%, #ff99d6 50%, #ffd9ec 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 179, 230, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Cute chibi face container */
+        .chibi-face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Circuit pattern cheeks (computer engineering) */
+        .circuit-cheek {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            top: 60%;
+        }
+
+        .circuit-cheek.left-cheek {
+            left: 15%;
+        }
+
+        .circuit-cheek.right-cheek {
+            right: 15%;
+        }
+
+        .mini-line {
+            position: absolute;
+            width: 4px;
+            height: 1px;
+            background: rgba(102, 126, 234, 0.5);
+            top: 3px;
+            left: 2px;
+            border-radius: 1px;
+        }
+
+        .mini-dot {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(102, 126, 234, 0.7);
+            border-radius: 50%;
+            top: 2px;
+            left: 6px;
+        }
+
+        /* Cute chibi eyes */
+        .chibi-eyes {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .eye {
+            width: 8px;
+            height: 10px;
+            background: #333;
+            border-radius: 50%;
+            position: relative;
+            animation: blink 3s infinite;
+        }
+
+        .pupil {
+            position: absolute;
+            width: 6px;
+            height: 8px;
+            background: #222;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+        }
+
+        .shine {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            animation: twinkle 2s infinite;
+        }
+
+        /* Health cross nose */
+        .health-nose {
+            position: absolute;
+            top: 52%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .cross-h {
+            width: 6px;
+            height: 2px;
+            background: #ff69b4;
+            border-radius: 1px;
+            position: absolute;
+            top: -1px;
+            left: -3px;
+        }
+
+        .cross-v {
+            width: 2px;
+            height: 6px;
+            background: #ff69b4;
+            border-radius: 1px;
+            position: absolute;
+            top: -3px;
+            left: -1px;
+        }
+
+        /* Cute smile */
+        .chibi-mouth {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 4px;
+            border: 2px solid #ff69b4;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* AI neural sparkles */
+        .neural-sparkles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 8px;
+            animation: float 2s infinite ease-in-out;
+        }
+
+        .sparkle.spark1 {
+            top: 10%;
+            left: 80%;
+            animation-delay: 0s;
+        }
+
+        .sparkle.spark2 {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0.7s;
+        }
+
+        .sparkle.spark3 {
+            top: 80%;
+            left: 85%;
+            animation-delay: 1.4s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { height: 10px; }
+            95% { height: 2px; }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            33% { transform: translateY(-3px) rotate(120deg); opacity: 1; }
+            66% { transform: translateY(2px) rotate(240deg); opacity: 0.8; }
+        }
+
+        /* Popup Chibi Character Styles */
+        .popup-chibi {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #ffb3e6 0%, #ff99d6 50%, #ffd9ec 100%);
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(255, 179, 230, 0.6);
+            z-index: 9999;
+            opacity: 0;
+            animation: bounceIn 0.5s ease-out forwards;
+            cursor: pointer;
+        }
+
+        .popup-chibi.show {
+            opacity: 1;
+        }
+
+        .popup-chibi.hide {
+            animation: bounceOut 0.5s ease-in forwards;
+        }
+
+        /* Large Chibi Face */
+        .large-chibi-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        /* Large Chibi Eyes */
+        .large-chibi-eyes {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .large-eye {
+            width: 20px;
+            height: 25px;
+            background: #333;
+            border-radius: 50%;
+            position: relative;
+            animation: largeBlink 3s infinite;
+        }
+
+        .large-pupil {
+            position: absolute;
+            width: 16px;
+            height: 20px;
+            background: #222;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+        }
+
+        .large-shine {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 4px;
+            left: 5px;
+            animation: largeTwinkle 2s infinite;
+        }
+
+        /* Large Chibi Mouth */
+        .large-chibi-mouth {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 15px;
+            border: 4px solid #ff69b4;
+            border-top: none;
+            border-radius: 0 0 30px 30px;
+        }
+
+        /* Large Chibi Cheeks */
+        .large-chibi-cheeks {
+            position: absolute;
+            top: 55%;
+            width: 100%;
+            height: 100%;
+        }
+
+        .large-cheek {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 192, 203, 0.6);
+            border-radius: 50%;
+            top: 0;
+            animation: blushPulse 2s infinite;
+        }
+
+        .large-cheek.left {
+            left: 15%;
+        }
+
+        .large-cheek.right {
+            right: 15%;
+        }
+
+        /* Message Bubble - Positioned above chibi head */
+        .chibi-message {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            padding: 18px 25px;
+            border-radius: 25px;
+            border: 3px solid #ff69b4;
+            box-shadow: 
+                0 10px 30px rgba(255, 105, 180, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.8) inset;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            max-width: 320px;
+            z-index: 10000;
+            animation: messageFloat 0.6s ease-out;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        /* Speech bubble tail pointing down to chibi */
+        .chibi-message::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 12px solid #ff69b4;
+        }
+
+        /* Inner triangle for cleaner look */
+        .chibi-message::before {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(255, 255, 255, 0.98);
+            z-index: 1;
+        }
+
+        /* Floating thought bubbles */
+        .thought-bubbles {
+            position: fixed;
+            top: 35%;
+            left: 45%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .thought-bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #ff69b4;
+            border-radius: 50%;
+            animation: thoughtFloat 3s infinite ease-in-out;
+        }
+
+        .bubble-1 {
+            width: 12px;
+            height: 12px;
+            bottom: 40px;
+            left: 20px;
+            animation-delay: 0s;
+        }
+
+        .bubble-2 {
+            width: 8px;
+            height: 8px;
+            bottom: 60px;
+            left: 35px;
+            animation-delay: 0.5s;
+        }
+
+        .bubble-3 {
+            width: 6px;
+            height: 6px;
+            bottom: 75px;
+            left: 45px;
+            animation-delay: 1s;
+        }
+
+        @keyframes thoughtFloat {
+            0%, 100% { 
+                opacity: 0.6; 
+                transform: translateY(0px) scale(1); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: translateY(-5px) scale(1.1); 
+            }
+        }
+
+        /* Sparkles around the chibi */
+        .popup-sparkles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .popup-sparkle {
+            position: absolute;
+            font-size: 20px;
+            animation: sparkleFloat 2s infinite ease-in-out;
+        }
+
+        .popup-sparkle.sp1 {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .popup-sparkle.sp2 {
+            top: 20%;
+            right: 10%;
+            animation-delay: 0.5s;
+        }
+
+        .popup-sparkle.sp3 {
+            bottom: 30%;
+            left: 5%;
+            animation-delay: 1s;
+        }
+
+        .popup-sparkle.sp4 {
+            bottom: 20%;
+            right: 5%;
+            animation-delay: 1.5s;
+        }
+
+        .popup-sparkle.sp5 {
+            top: 50%;
+            left: -5%;
+            animation-delay: 0.7s;
+        }
+
+        .popup-sparkle.sp6 {
+            top: 40%;
+            right: -5%;
+            animation-delay: 1.2s;
+        }
+
+        /* Animations */
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes bounceOut {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+        }
+
+        @keyframes largeBlink {
+            0%, 90%, 100% { height: 25px; }
+            95% { height: 5px; }
+        }
+
+        @keyframes largeTwinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        @keyframes blushPulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        @keyframes messageFloat {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -80%);
+                scale: 0.8;
+            }
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -110%);
+                scale: 1.05;
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -100%);
+                scale: 1;
+            }
+        }
+
+        @keyframes sparkleFloat {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg) scale(1); 
+                opacity: 0.7; 
+            }
+            33% { 
+                transform: translateY(-8px) rotate(120deg) scale(1.2); 
+                opacity: 1; 
+            }
+            66% { 
+                transform: translateY(4px) rotate(240deg) scale(0.8); 
+                opacity: 0.8; 
+            }
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pulse-icon {
+            width: 18px;
+            height: 18px;
+            color: #ff69b4;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 0;
+            scroll-behavior: smooth;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Message Styles */
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            position: relative;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.bot .message-content {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(10px);
+            color: white !important;
+            border-bottom-left-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message-content p {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 15px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .timestamp {
+            display: block;
+            font-size: 11px;
+            margin-top: 8px;
+            opacity: 0.7;
+            font-weight: 500;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #999;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Input Container */
+        .input-container {
+            padding: 1.5rem 0 2rem 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 8px 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 15px;
+            line-height: 1.5;
+            resize: none;
+            font-family: inherit;
+            color: #333;
+            min-height: 24px;
+            max-height: 120px;
+        }
+
+        .message-input::placeholder {
+            color: #999;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-icon {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
+        /* Disclaimer Modal */
+        .disclaimer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .disclaimer-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .disclaimer-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .warning-icon {
+            color: #ff9800;
+            width: 28px;
+            height: 28px;
+        }
+
+        .disclaimer-header h2 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .disclaimer-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .disclaimer-content p {
+            margin-bottom: 1rem;
+        }
+
+        .disclaimer-content ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .disclaimer-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .crisis-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .crisis-info strong {
+            color: #b8860b;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .crisis-info p {
+            margin: 0.25rem 0;
+            font-weight: 500;
+        }
+
+        .disclaimer-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .disclaimer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+            
+            .chat-container {
+                padding: 0 0.5rem;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .disclaimer-modal {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .disclaimer-header h2 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .message-content {
+                max-width: 90%;
+                padding: 0.875rem 1rem;
+            }
+            
+            .input-wrapper {
+                padding: 10px 12px;
+            }
+            
+            .send-button {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .send-icon {
+                width: 16px;
+                height: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Disclaimer Modal -->
+        <div id="disclaimerOverlay" class="disclaimer-overlay">
+            <div class="disclaimer-modal">
+                <div class="disclaimer-header">
+                    <h2>⚠️ Important Notice</h2>
+                </div>
+                <div class="disclaimer-content">
+                    <p>
+                        HealthAI is designed to provide emotional support and wellness guidance. 
+                        However, it is not a substitute for professional mental health care.
+                    </p>
+                    <ul>
+                        <li>This is not professional therapy or medical advice</li>
+                        <li>If you're in crisis, contact emergency services immediately</li>
+                        <li>For serious mental health concerns, please consult a licensed professional</li>
+                        <li>Your conversations are private and supportive</li>
+                    </ul>
+                    <div class="crisis-info">
+                        <strong>Crisis Resources:</strong>
+                        <p>National Suicide Prevention Lifeline: 988</p>
+                        <p>Crisis Text Line: Text HOME to 741741</p>
+                    </div>
+                </div>
+                <button class="disclaimer-button" onclick="hideDisclaimer()">
+                    I Understand
+                </button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <div class="logo-symbol">
+                            <!-- Cute chibi robot face -->
+                            <div class="chibi-face">
+                                <!-- Circuit pattern cheeks -->
+                                <div class="circuit-cheek left-cheek">
+                                    <div class="mini-line"></div>
+                                    <div class="mini-dot"></div>
+                                </div>
+                                <div class="circuit-cheek right-cheek">
+                                    <div class="mini-line"></div>
+                                    <div class="mini-dot"></div>
+                                </div>
+                                
+                                <!-- Cute eyes -->
+                                <div class="chibi-eyes">
+                                    <div class="eye left-eye">
+                                        <div class="pupil"></div>
+                                        <div class="shine"></div>
+                                    </div>
+                                    <div class="eye right-eye">
+                                        <div class="pupil"></div>
+                                        <div class="shine"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Health cross nose -->
+                                <div class="health-nose">
+                                    <div class="cross-h"></div>
+                                    <div class="cross-v"></div>
+                                </div>
+                                
+                                <!-- Cute smile -->
+                                <div class="chibi-mouth"></div>
+                                
+                                <!-- AI neural sparkles -->
+                                <div class="neural-sparkles">
+                                    <div class="sparkle spark1">✨</div>
+                                    <div class="sparkle spark2">💫</div>
+                                    <div class="sparkle spark3">⭐</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h1>HealthAI</h1>
+                </div>
+                <div class="header-subtitle">
+                    <span class="pulse-icon">💝</span>
+                    <span>Your Cute Mental Health Buddy</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <button class="new-chat-button" onclick="createNewConversation(); event.stopPropagation();">
+                        📄 New text file
+                    </button>
+                </div>
+                <div class="conversations-list" id="conversationsList">
+                    <!-- Conversation items will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Chat Wrapper -->
+            <div class="chat-wrapper">
+                <!-- Chat Container -->
+                <div class="chat-container">
+                    <div class="messages-container" id="messagesContainer">
+                        <!-- Messages will be inserted here -->
+                    </div>
+
+                    <div class="input-container">
+                        <div class="input-wrapper">
+                            <textarea
+                                id="messageInput"
+                                placeholder="Share what's on your mind..."
+                                class="message-input"
+                                rows="1"
+                            ></textarea>
+                            <button class="send-button" id="sendButton" onclick="sendMessage()">
+                                ➤
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mentalHealthResponses = {
+            anxiety: {
+                mild: [
+                    "I'm picking up on some worried energy in what you're saying. Is this something that's been on your mind lately, or more of a passing concern? Sometimes it helps to talk through what's creating that uneasy feeling.",
+                    "It sounds like there might be something making you a bit anxious. What's been going on that has you feeling this way? Is it a specific situation or more of a general feeling?",
+                    "I can sense there's something weighing on you. Are you dealing with some nervousness about something specific, or is it more of that background worry that's hard to pinpoint? Either way, I'm here to listen."
+                ],
+                moderate: [
+                    "Whoa, I can really feel the intensity of what you're going through. This level of anxiety isn't just 'nerves' - this is your whole system firing on all cylinders. It's like being stuck in fight-or-flight mode when there's no actual tiger chasing you.",
+                    "This sounds really overwhelming. When anxiety hits this hard, it affects everything - your breathing, your thoughts, even how your body feels. It's like being trapped in your own mind's emergency broadcast system.",
+                    "Man, you're really in the thick of it right now. Moderate anxiety is brutal because you're aware enough to know it's 'just anxiety' but it still feels completely real and threatening. That internal conflict is maddening."
+                ],
+                severe: [
+                    "Okay, I can tell you're in crisis mode right now. When anxiety reaches this level, your brain literally thinks you're in life-or-death danger. That's why everything feels so intense and urgent. Your body is flooded with stress hormones right now.",
+                    "This sounds like a full-blown panic attack. I know it feels like you're dying or losing your mind, but that's actually your nervous system misfiring. You're not in actual danger, even though every cell in your body is screaming that you are.",
+                    "You're in the eye of an anxiety storm right now. This level of panic is your brain's most primitive alarm system going haywire. The good news is that panic attacks always peak and then subside - your body literally can't sustain this level of activation."
+                ]
+            },
+            depression: {
+                mild: [
+                    "I'm hearing something a bit heavy in what you're sharing. Are you going through a rough patch right now, or feeling down about something specific? Sometimes it helps to talk about what's been weighing on you.",
+                    "It sounds like you might be feeling a bit low lately. Is this about something that happened, or more of a general feeling that's been hanging around? I'm here to listen either way.",
+                    "I can sense you're not feeling your best right now. What's been going on that has you feeling this way? Is it something specific or just one of those phases where everything feels a bit harder?"
+                ],
+                moderate: [
+                    "I can really feel the weight of what you're carrying. This isn't just a bad day - this is depression settling into your bones, making even basic tasks feel monumental. Your emotional immune system is compromised right now.",
+                    "This level of depression is like trying to swim through molasses. Everything takes so much more energy than it should, and you're probably beating yourself up for not being able to function 'normally.' That self-criticism just makes it worse.",
+                    "You're in that awful space where you know logically that things aren't hopeless, but emotionally everything feels impossible. Depression is literally changing your brain chemistry right now, making it harder to feel pleasure or motivation."
+                ],
+                severe: [
+                    "I'm really worried about you right now. This level of depression is like being trapped in a deep, dark well where you can barely see the light above. Your brain is essentially in survival mode, which is why everything feels so hopeless and overwhelming.",
+                    "You're describing something that sounds like clinical depression at its worst. It's not just sadness - it's like your emotional processing system has gone offline. The part of your brain that normally finds meaning and hope is temporarily hijacked by this illness.",
+                    "This is the kind of depression that makes you feel like you're drowning in your own mind. Every thought feels heavy, every emotion feels like too much to bear. You're fighting a battle that nobody else can see, and that's exhausting beyond words."
+                ]
+            },
+            stress: {
+                mild: [
+                    "I can hear that underlying tension in what you're saying. Mild stress is like having too many browser tabs open in your mind - nothing's crashing yet, but everything's running slower than it should.",
+                    "You're describing that familiar feeling of being stretched thin. It's like your nervous system is running at 75% capacity all the time instead of the usual 50%. Not crisis mode, but definitely not comfortable either.",
+                    "That low-grade stress you're experiencing is real. It's your body's way of saying 'hey, we're managing more than our optimal load here.' Even if you're handling it, it's taking more energy than you realize."
+                ],
+                moderate: [
+                    "You're in that overwhelming space where everything feels urgent and important at the same time. Your stress response is stuck in the 'on' position, flooding your system with cortisol and making it hard to prioritize or think clearly.",
+                    "This level of stress is like trying to juggle while riding a unicycle - you're managing to keep things in the air, but barely, and you know one small thing could send everything crashing down. Your nervous system is working overtime.",
+                    "I can feel the intensity of what you're carrying. When stress reaches this level, it starts affecting everything - your sleep, your digestion, your ability to focus. Your body is essentially in a chronic state of 'emergency mode.'"
+                ],
+                severe: [
+                    "You're describing what sounds like chronic stress overload. This is the point where your body's stress response system is completely dysregulated - you're running on adrenaline and cortisol 24/7, which is literally toxic to your system.",
+                    "This level of stress is dangerous territory. Your nervous system is so overwhelmed that it can't distinguish between actual emergencies and daily tasks anymore. Everything feels like a five-alarm fire, even simple decisions.",
+                    "You're at the point where stress has become your baseline, which means your body never gets a chance to rest and repair. This is how people end up with serious health problems - your system is burning through resources it doesn't have."
+                ]
+            },
+            loneliness: {
+                mild: [
+                    "I can sense that subtle ache of loneliness in what you're saying. It's like being in a room full of people but feeling like you're behind glass - technically connected but somehow not really reaching anyone.",
+                    "That disconnected feeling you're describing is so common yet so painful. It's not dramatic loneliness, just this persistent sense that your social connections aren't quite deep enough to fill that human need for belonging.",
+                    "You're experiencing what I call 'quiet loneliness' - not the sobbing-alone-on-Friday-night kind, but that subtle background hum of wishing you had someone who really gets you. It's exhausting in its own way."
+                ],
+                moderate: [
+                    "This level of loneliness cuts deep. You're not just missing people - you're missing being truly seen and understood by someone. It's like emotional starvation; you're surrounded by social 'junk food' but craving real nourishment.",
+                    "I can feel the weight of isolation in your words. This isn't just about being alone - it's about feeling fundamentally disconnected from the human experience. Like everyone else got a manual for connection that you never received.",
+                    "You're describing that painful paradox where you feel most alone when you're around other people. It's like being homesick for a place that doesn't exist - a place where you truly belong and are understood."
+                ],
+                severe: [
+                    "This sounds like profound isolation - the kind that makes you question if you even matter to anyone. Severe loneliness literally registers in your brain the same way as physical pain, which is why it hurts so much.",
+                    "You're in that devastating space where loneliness becomes a self-fulfilling prophecy. The more isolated you feel, the harder it becomes to reach out, creating this vicious cycle that feels impossible to break.",
+                    "This level of loneliness is like being trapped in solitary confinement while everyone else is at a party next door. You can hear life happening, but you feel completely cut off from it. It's one of the most painful human experiences."
+                ]
+            },
+            anger: {
+                mild: [
+                    "I can hear that simmering frustration in your words. Mild anger is like having a low-grade fever - it's not dramatic, but it colors everything you do and drains your energy in subtle ways.",
+                    "You're describing that familiar irritation that builds up over time. It's like having a rock in your shoe - each step becomes more annoying until you can't ignore it anymore. Your patience bank is running low.",
+                    "That frustrated energy you're carrying makes perfect sense. When things don't go as expected, it's natural for that fight-or-flight response to simmer just below the surface. Your body is primed for action but has nowhere to direct it."
+                ],
+                moderate: [
+                    "This anger has some real fire behind it. You're not just annoyed - there's been a violation of something you value, whether it's fairness, respect, or boundaries. Your nervous system is fully activated right now.",
+                    "I can feel the intensity of your frustration. This level of anger usually means something important to you has been threatened or dismissed. Your body is flooded with adrenaline, making everything feel urgent and intense.",
+                    "You're in that space where anger becomes consuming. It's like your emotional thermostat is stuck on high - everything feels more intense, more personal, more significant than it normally would. Your whole system is mobilized for conflict."
+                ],
+                severe: [
+                    "This is rage territory - the kind of anger that feels like it might consume you from the inside out. Your amygdala has essentially hijacked your prefrontal cortex, which is why everything feels so intense and immediate right now.",
+                    "You're describing fury at its peak. This isn't just being mad - this is your entire nervous system in full combat mode. Your body is flooded with stress hormones, making rational thinking nearly impossible.",
+                    "This level of rage is like a wildfire in your brain. Every thought gets filtered through this intense anger, making it hard to see anything clearly. Your fight-or-flight response is so activated that your body probably feels physically amped up."
+                ]
+            },
+            sleep: [
+                "Sleep issues are brutal because they create this vicious cycle - you're tired, so you stress about not sleeping, which makes it even harder to sleep. Your nervous system gets stuck in this hypervigilant state.",
+                "When your sleep is disrupted, it affects literally everything - your emotional regulation, your immune system, your ability to handle stress. It's like trying to function on a phone with 5% battery.",
+                "I know that frustration of lying there with a tired body but a wired mind. Your brain's arousal system is overriding your sleep system, probably because of stress or anxiety that's not fully processed.",
+                "Sleep problems are exhausting on multiple levels. Not only are you physically tired, but you're also mentally drained from the constant worry about whether you'll be able to sleep. It becomes this meta-anxiety about sleep itself."
+            ],
+            general: [
+                "Hey there! What's going on with you today? I'm here to listen to whatever's on your mind - whether it's something serious or you just want to chat.",
+                "I'm glad you're here. What brought you to talk today? Could be anything - good stuff, rough stuff, or just wanting someone to bounce thoughts off of.",
+                "What's happening in your world? I'm here for whatever you want to share - big concerns, small thoughts, or just casual conversation.",
+                "How are things going for you? I'm here to listen, whether you're dealing with something specific or just want to talk through whatever's on your mind.",
+                "What's on your mind today? I'm here for all kinds of conversations - serious topics, everyday stuff, or just random thoughts you want to explore.",
+                "Hey! What would you like to talk about? I'm here whether you're working through something challenging or just want a friendly chat.",
+                "What's up? I'm here to listen and chat about whatever you'd like - could be something you're dealing with, or just thoughts you want to share.",
+                "How's your day been? I'm curious to hear what's been going on - could be anything that's on your mind right now.",
+                "Nice to meet you! What's been happening lately? I'm here for whatever kind of conversation you're in the mood for.",
+                "Hey! I'm here to chat about whatever's on your mind. Could be something exciting, something you're thinking through, or just everyday stuff."
+            ]
+        };
+
+        // Enhanced keyword detection for better accuracy
+        const emotionKeywords = {
+            anxiety: {
+                primary: ['anxious', 'anxiety', 'panic', 'worried', 'nervous', 'scared', 'fear'],
+                secondary: ['butterflies', 'racing heart', 'can\'t breathe', 'shaky', 'on edge', 'terrified'],
+                situations: ['presentation', 'interview', 'test', 'meeting', 'social', 'crowd', 'phone call']
+            },
+            depression: {
+                primary: ['depressed', 'depression', 'sad', 'hopeless', 'empty', 'numb', 'down'],
+                secondary: ['no energy', 'worthless', 'pointless', 'dark', 'heavy', 'tired of'],
+                situations: ['lost job', 'breakup', 'death', 'loss', 'failed', 'rejected']
+            },
+            stress: {
+                primary: ['stressed', 'stress', 'overwhelmed', 'pressure', 'burned out', 'exhausted'],
+                secondary: ['too much', 'can\'t cope', 'breaking point', 'juggling', 'deadline'],
+                situations: ['work', 'school', 'finals', 'money', 'bills', 'family', 'relationship']
+            },
+            loneliness: {
+                primary: ['lonely', 'alone', 'isolated', 'disconnected', 'nobody'],
+                secondary: ['no friends', 'misunderstood', 'left out', 'invisible'],
+                situations: ['moved', 'new city', 'lost friends', 'broke up', 'everyone busy']
+            },
+            anger: {
+                primary: ['angry', 'mad', 'furious', 'rage', 'pissed', 'frustrated', 'annoyed'],
+                secondary: ['can\'t stand', 'hate', 'unfair', 'betrayed', 'disrespected'],
+                situations: ['work', 'boss', 'partner', 'friend', 'family', 'traffic', 'politics']
+            }
+        };
+
+        const crisisKeywords = [
+            'suicide', 'kill myself', 'end it all', 'not worth living', 'hurt myself',
+            'self harm', 'cutting', 'overdose', 'jump', 'die', 'ending my life'
+        ];
+
+        const intensityKeywords = {
+            mild: ['a bit', 'somewhat', 'little', 'slightly', 'kind of', 'sort of', 'maybe', 'think i'],
+            moderate: ['really', 'quite', 'pretty', 'fairly', 'definitely', 'struggling', 'hard time'],
+            severe: ['extremely', 'totally', 'completely', 'overwhelming', 'unbearable', 'can\'t handle', 'too much', 'falling apart', 'breaking down']
+        };
+
+        let messages = [];
+        let isLoading = false;
+        let conversations = [];
+        let currentConversationId = null;
+
+        function hideDisclaimer() {
+            document.getElementById('disclaimerOverlay').classList.add('hidden');
+            createNewConversation();
+        }
+
+        function initializeChat() {
+            const introMessage = {
+                text: "Hey there! I'm here to listen and chat about whatever's going on with you. Mental health stuff, life stress, relationship drama, work bullshit - whatever it is, I get it. No judgment, just real talk.",
+                sender: 'bot',
+                timestamp: new Date().toLocaleTimeString()
+            };
+            messages.push(introMessage);
+            displayMessage(introMessage);
+            
+            setTimeout(() => {
+                const welcomeMessage = {
+                    text: "So, what's up? How are you doing today?",
+                    sender: 'bot',
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                messages.push(welcomeMessage);
+                displayMessage(welcomeMessage);
+                saveCurrentConversation();
+            }, 2000);
+        }
+
+        let creatingNewConversation = false;
+        
+        function createNewConversation() {
+            // Prevent multiple rapid calls
+            if (creatingNewConversation || isLoading) {
+                return;
+            }
+            
+            creatingNewConversation = true;
+            
+            // Save current conversation if it exists
+            if (currentConversationId) {
+                saveCurrentConversation();
+            }
+
+            // Create new conversation
+            const newConversation = {
+                id: Date.now(),
+                title: 'New conversation',
+                messages: [],
+                createdAt: new Date(),
+                lastMessage: 'New conversation'
+            };
+
+            conversations.unshift(newConversation);
+            currentConversationId = newConversation.id;
+            messages = [];
+
+            // Clear chat interface
+            document.getElementById('messagesContainer').innerHTML = '';
+            
+            // Initialize the new chat
+            initializeChat();
+            
+            // Update sidebar
+            updateConversationsList();
+            
+            // Reset the flag after a short delay
+            setTimeout(() => {
+                creatingNewConversation = false;
+            }, 500);
+        }
+
+        function switchToConversation(conversationId) {
+            // Save current conversation
+            if (currentConversationId) {
+                saveCurrentConversation();
+            }
+
+            // Load selected conversation
+            const conversation = conversations.find(c => c.id === conversationId);
+            if (conversation) {
+                currentConversationId = conversationId;
+                messages = [...conversation.messages];
+                
+                // Clear and reload chat interface
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = '';
+                
+                messages.forEach(message => {
+                    displayMessage(message, false); // false = don't auto-scroll during batch load
+                });
+                
+                // Scroll to bottom after loading all messages
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                updateConversationsList();
+            }
+        }
+
+        function saveCurrentConversation() {
+            if (currentConversationId) {
+                const conversation = conversations.find(c => c.id === currentConversationId);
+                if (conversation) {
+                    conversation.messages = [...messages];
+                    conversation.lastMessage = messages.length > 0 ? 
+                        messages[messages.length - 1].text.substring(0, 50) + '...' : 
+                        'New conversation';
+                    conversation.title = generateConversationTitle(messages);
+                }
+            }
+        }
+
+        function generateConversationTitle(messages) {
+            const userMessages = messages.filter(m => m.sender === 'user');
+            if (userMessages.length > 0) {
+                const firstUserMessage = userMessages[0].text;
+                return firstUserMessage.length > 30 ? 
+                    firstUserMessage.substring(0, 30) + '...' : 
+                    firstUserMessage;
+            }
+            return 'New conversation';
+        }
+
+        function deleteConversation(conversationId, event) {
+            event.stopPropagation();
+            
+            const conversationIndex = conversations.findIndex(c => c.id === conversationId);
+            if (conversationIndex !== -1) {
+                conversations.splice(conversationIndex, 1);
+                
+                // If we're deleting the current conversation
+                if (currentConversationId === conversationId) {
+                    if (conversations.length > 0) {
+                        // Switch to the most recent conversation
+                        switchToConversation(conversations[0].id);
+                    } else {
+                        // Create a new conversation if no conversations left
+                        createNewConversation();
+                    }
+                }
+                
+                updateConversationsList();
+            }
+        }
+
+        function updateConversationsList() {
+            const conversationsList = document.getElementById('conversationsList');
+            conversationsList.innerHTML = '';
+
+            conversations.forEach(conversation => {
+                const conversationItem = document.createElement('div');
+                conversationItem.className = `conversation-item ${conversation.id === currentConversationId ? 'active' : ''}`;
+                conversationItem.onclick = () => switchToConversation(conversation.id);
+                
+                conversationItem.innerHTML = `
+                    <button class="delete-conversation" onclick="deleteConversation(${conversation.id}, event)">×</button>
+                    <div class="conversation-title">${conversation.title}</div>
+                    <div class="conversation-preview">${conversation.lastMessage}</div>
+                    <div class="conversation-date">${formatDate(conversation.createdAt)}</div>
+                `;
+                
+                conversationsList.appendChild(conversationItem);
+            });
+        }
+
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) {
+                return `${days}d ago`;
+            } else if (hours > 0) {
+                return `${hours}h ago`;
+            } else {
+                return 'Just now';
+            }
+        }
+
+        function detectIntensity(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            for (let keyword of intensityKeywords.severe) {
+                if (lowerMessage.includes(keyword)) {
+                    return 'severe';
+                }
+            }
+            
+            for (let keyword of intensityKeywords.moderate) {
+                if (lowerMessage.includes(keyword)) {
+                    return 'moderate';
+                }
+            }
+            
+            for (let keyword of intensityKeywords.mild) {
+                if (lowerMessage.includes(keyword)) {
+                    return 'mild';
+                }
+            }
+            
+            return 'moderate';
+        }
+
+        function analyzeEmotion(message) {
+            const lowerMessage = message.toLowerCase();
+            let detectedEmotions = [];
+            let confidence = 0;
+            
+            // Check each emotion type
+            for (let emotion in emotionKeywords) {
+                let emotionScore = 0;
+                
+                // Primary keywords (high weight)
+                for (let keyword of emotionKeywords[emotion].primary) {
+                    if (lowerMessage.includes(keyword)) {
+                        emotionScore += 3;
+                    }
+                }
+                
+                // Secondary keywords (medium weight)
+                for (let keyword of emotionKeywords[emotion].secondary) {
+                    if (lowerMessage.includes(keyword)) {
+                        emotionScore += 2;
+                    }
+                }
+                
+                // Situational keywords (low weight)
+                for (let keyword of emotionKeywords[emotion].situations) {
+                    if (lowerMessage.includes(keyword)) {
+                        emotionScore += 1;
+                    }
+                }
+                
+                if (emotionScore > 0) {
+                    detectedEmotions.push({
+                        type: emotion,
+                        score: emotionScore
+                    });
+                }
+            }
+            
+            // Sort by score and return the highest, but only if score is significant
+            detectedEmotions.sort((a, b) => b.score - a.score);
+            
+            // Require a minimum score of 4 to assume mental health issues
+            // This means they need clear emotional language, not just casual mentions
+            if (detectedEmotions.length > 0 && detectedEmotions[0].score >= 4) {
+                return detectedEmotions[0].type;
+            }
+            
+            return 'general';
+        }
+
+        function generateContextualResponse(message, emotionType, intensity) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Create more specific responses based on context and actual content
+            if (emotionType === 'anxiety') {
+                if (lowerMessage.includes('presentation') || lowerMessage.includes('speaking')) {
+                    return "A presentation coming up? I can feel that anxiety building. Is this for work, school, or something else? And how long do you have to prepare? Public speaking hits that primal fear of being judged, but knowing more about your situation would help me understand what's really triggering this.";
+                }
+                if (lowerMessage.includes('test') || lowerMessage.includes('exam')) {
+                    return "Test anxiety is rough. What kind of test are we talking about - something you've studied hard for, or one you're not feeling prepared for? Sometimes the anxiety comes from different places. Are you worried about blanking out, or is it more about the consequences of not doing well?";
+                }
+                if (lowerMessage.includes('interview')) {
+                    return "Job interviews can be nerve-wracking as hell. Is this for a job you really want, or more of a general interview anxiety thing? And what's the role - something in your wheelhouse or a bit of a stretch? Understanding what's at stake helps me get why your brain is in overdrive.";
+                }
+                if (lowerMessage.includes('social') || lowerMessage.includes('party') || lowerMessage.includes('event')) {
+                    return "Social events can feel overwhelming. Is this with people you know well, or more of a networking/new people situation? And are you someone who usually enjoys social stuff, or has this always been challenging? Sometimes it helps to know if this is new anxiety or your usual pattern.";
+                }
+                if (lowerMessage.includes('driving') || lowerMessage.includes('highway')) {
+                    return "Driving anxiety can be really limiting. Is this something that started recently, or have you always felt this way behind the wheel? And is it specific situations like highways, or just driving in general? Sometimes knowing the trigger helps figure out the best approach.";
+                }
+                if (lowerMessage.includes('flying') || lowerMessage.includes('plane')) {
+                    return "Flying anxiety is more common than you think. Is this a trip you have to take soon, or more of a general fear? And what part bothers you most - the takeoff, being enclosed, turbulence, or just the lack of control? Understanding your specific triggers can really help.";
+                }
+            }
+            
+            if (emotionType === 'depression') {
+                if (lowerMessage.includes('job') && (lowerMessage.includes('lost') || lowerMessage.includes('fired'))) {
+                    return "Losing a job is devastating on so many levels. How long ago did this happen? And was it something you saw coming, or did it blindside you? Job loss hits identity and security at the same time - no wonder you're struggling. Are you worried more about the financial aspect or the personal impact?";
+                }
+                if (lowerMessage.includes('breakup') || lowerMessage.includes('broke up') || lowerMessage.includes('relationship ended')) {
+                    return "Breakups are brutal. How long were you together, and was this recent? Sometimes the timeline matters for understanding what you're processing. Are you more angry, sad, or just numb right now? Each emotion needs a different kind of support.";
+                }
+                if (lowerMessage.includes('morning') || lowerMessage.includes('wake up') || lowerMessage.includes('getting up')) {
+                    return "Morning depression is the worst - waking up and immediately feeling that weight. How long has this been happening? And is it every morning, or just some days? Sometimes patterns can tell us a lot about what's going on underneath.";
+                }
+                if (lowerMessage.includes('worthless') || lowerMessage.includes('failure') || lowerMessage.includes('good enough')) {
+                    return "Those self-critical thoughts are so painful. Is this something you've always struggled with, or is it tied to something specific that happened recently? Sometimes it helps to know if this is your inner voice or depression talking. What's been triggering these thoughts lately?";
+                }
+                if (lowerMessage.includes('friends') && (lowerMessage.includes('lost') || lowerMessage.includes('don\'t have'))) {
+                    return "Friend stuff hits different because those relationships are supposed to be chosen. Did you lose specific friendships recently, or is this more about feeling like you don't have anyone close? Are you someone who used to have friends and lost them, or has making connections always been hard?";
+                }
+                if (lowerMessage.includes('motivation') || lowerMessage.includes('don\'t care') || lowerMessage.includes('nothing matters')) {
+                    return "That complete lack of motivation is rough. Is this new for you, or something that comes and goes? And is it everything that feels pointless, or specific areas of life? Sometimes understanding the scope helps figure out what might help.";
+                }
+            }
+            
+            if (emotionType === 'stress') {
+                if (lowerMessage.includes('deadline') || lowerMessage.includes('due tomorrow') || lowerMessage.includes('project')) {
+                    return "Deadline stress is brutal. What's the timeline you're working with - is this something due tomorrow or are you feeling the pressure building? And is it the workload that's overwhelming, or more about the stakes if you don't deliver? Understanding what's driving the panic helps.";
+                }
+                if (lowerMessage.includes('money') || lowerMessage.includes('bills') || lowerMessage.includes('debt') || lowerMessage.includes('financial')) {
+                    return "Money stress hits different because it affects everything. Is this about immediate bills you can't pay, or more of a long-term financial worry? And are we talking about basic needs being threatened, or more about financial goals? That context matters for figuring out next steps.";
+                }
+                if (lowerMessage.includes('work') && (lowerMessage.includes('too much') || lowerMessage.includes('overload'))) {
+                    return "Work overload is exhausting. Is this a temporary crunch time, or has it been like this for a while? And is it the volume of work, unrealistic expectations, or maybe lack of support that's getting to you? Sometimes knowing what's really driving it helps prioritize solutions.";
+                }
+                if (lowerMessage.includes('family') || lowerMessage.includes('parents') || lowerMessage.includes('relatives')) {
+                    return "Family stress is complicated because you can't just walk away. Is this ongoing drama, or did something specific happen recently? And are we talking about parents, siblings, or extended family? Each dynamic has its own challenges and potential approaches.";
+                }
+                if (lowerMessage.includes('school') || lowerMessage.includes('college') || lowerMessage.includes('finals')) {
+                    return "Academic stress can feel like your whole future is on the line. What level are we talking - high school, college, grad school? And is it about grades, getting into programs, or more about the workload itself? Sometimes breaking it down helps manage the overwhelm.";
+                }
+                if (lowerMessage.includes('moving') || lowerMessage.includes('move')) {
+                    return "Moving is one of life's biggest stressors - everything changes at once. Is this a choice you made or something you had to do? And how soon is it happening? The timeline and circumstances make a big difference in how to handle the stress.";
+                }
+            }
+            
+            if (emotionType === 'loneliness') {
+                if (lowerMessage.includes('moved') || lowerMessage.includes('new city') || lowerMessage.includes('relocated')) {
+                    return "Moving somewhere new is isolating as hell. How long ago did you move, and was this by choice or necessity? Are you someone who usually makes friends easily, or has connecting with people always been challenging? Starting over socially is tough regardless.";
+                }
+                if (lowerMessage.includes('friends') && (lowerMessage.includes('lost') || lowerMessage.includes('drifted'))) {
+                    return "Losing friendships hurts in a unique way. Did something specific happen, or was it more of a gradual drift? And were these close friends or more casual ones? Sometimes knowing how the friendship ended affects how we process the loss.";
+                }
+                if (lowerMessage.includes('work from home') || lowerMessage.includes('remote')) {
+                    return "Remote work loneliness is real - you miss those casual interactions. How long have you been working from home? And do you live alone, or is it more about missing work social connections? Sometimes the solution depends on what type of interaction you're craving.";
+                }
+                if (lowerMessage.includes('single') || lowerMessage.includes('dating')) {
+                    return "Being single can feel isolating, especially when everyone else seems paired up. Is this about wanting a relationship specifically, or more about feeling left out of social stuff? And are you actively dating, or taking a break? Each situation has different challenges.";
+                }
+                if (lowerMessage.includes('family') && lowerMessage.includes('far')) {
+                    return "Having family far away creates this constant homesickness. How far are we talking, and how often do you get to see them? Is this a recent separation or something you've been dealing with for a while? Distance from family hits different depending on the relationship.";
+                }
+            }
+            
+            if (emotionType === 'anger') {
+                if (lowerMessage.includes('boss') || lowerMessage.includes('manager') || lowerMessage.includes('supervisor')) {
+                    return "Boss drama is the worst because you can't just tell them off. What did they do - is this ongoing behavior or a specific incident? And how secure do you feel in your job? Sometimes the approach depends on whether you can afford to push back or need to strategize differently.";
+                }
+                if (lowerMessage.includes('unfair') || lowerMessage.includes('not fair') || lowerMessage.includes('injustice')) {
+                    return "Injustice is infuriating because it violates everything we believe about how things should work. Is this something happening to you personally, or are you witnessing it? And is there anything you can actually do about it, or are you stuck watching it happen?";
+                }
+                if (lowerMessage.includes('partner') || lowerMessage.includes('boyfriend') || lowerMessage.includes('girlfriend') || lowerMessage.includes('spouse')) {
+                    return "Relationship fights hit different because it's someone you love making you angry. Was this a one-off argument or part of a bigger pattern? And are you more hurt than angry, or is it genuine rage? Sometimes the underlying emotion changes how to handle it.";
+                }
+                if (lowerMessage.includes('traffic') || lowerMessage.includes('driving') || lowerMessage.includes('road')) {
+                    return "Road rage is so common because you're trapped in a metal box with idiots. Is this a regular thing for you, or was today particularly bad? And are we talking about your daily commute or just occasional driving? Sometimes patterns help figure out triggers.";
+                }
+                if (lowerMessage.includes('disrespected') || lowerMessage.includes('ignored') || lowerMessage.includes('dismissed')) {
+                    return "Being dismissed or disrespected cuts deep. Who did this - someone at work, in your personal life, or a stranger? And is this part of an ongoing dynamic or a one-time thing? Context helps figure out whether this is about them or about a pattern you're noticing.";
+                }
+            }
+            
+            if (emotionType === 'sleep') {
+                if (lowerMessage.includes('racing thoughts') || lowerMessage.includes('mind racing')) {
+                    return "Racing thoughts at bedtime are torture. Is your mind replaying the day, worrying about tomorrow, or just random stuff? And how long has this been happening - is it recent or ongoing? Sometimes the content of the thoughts gives clues about solutions.";
+                }
+                if (lowerMessage.includes('wake up') && lowerMessage.includes('middle')) {
+                    return "Middle-of-the-night wake-ups are the worst. What time do you usually wake up, and can you get back to sleep? Is your mind immediately racing, or do you lie there feeling wired? The pattern can help figure out what's going on.";
+                }
+                if (lowerMessage.includes('nightmares') || lowerMessage.includes('bad dreams')) {
+                    return "Nightmares can really mess with sleep quality. Are these recurring themes or random scary stuff? And is this recent or something you've dealt with for a while? Sometimes stress triggers them, but other times it's just brain processing.";
+                }
+            }
+            
+            // Fall back to intensity-based responses
+            let responses;
+            if (emotionType === 'general' || emotionType === 'sleep') {
+                responses = mentalHealthResponses[emotionType];
+            } else {
+                responses = mentalHealthResponses[emotionType][intensity];
+            }
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function generateResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Crisis detection first
+            const hasCrisisKeyword = crisisKeywords.some(keyword => 
+                lowerMessage.includes(keyword)
+            );
+            
+            if (hasCrisisKeyword) {
+                return `Hey, I can tell you're going through something really heavy right now. I'm worried about you. 
+
+Look, I know things feel impossible right now, but these feelings can change. Here's what might help:
+
+• Take things one moment at a time - don't think about tomorrow, just focus on getting through the next hour
+• Try to be around people if you can - call someone, go to a public place, don't isolate yourself
+• Do something that grounds you - take a shower, listen to music, pet an animal, anything that connects you to the present
+• Remember that your brain is lying to you right now - depression and pain make everything seem hopeless when it's not
+• Write down three small things you can do today - make tea, text one person, step outside for 5 minutes
+
+You're stronger than you know, and these feelings won't last forever. What's going on that's making you feel this way?`;
+            }
+
+            // Analyze emotion and intensity
+            const emotionType = analyzeEmotion(message);
+            const intensity = detectIntensity(message);
+            
+            // Generate contextual response
+            return generateContextualResponse(message, emotionType, intensity);
+        }
+
+        function displayMessage(message) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.sender}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <p>${message.text}</p>
+                    <span class="timestamp">${message.timestamp}</span>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // Enhanced auto-scroll functionality
+            // Force scroll for user messages and bot responses
+            const shouldForceScroll = message.sender === 'user' || message.sender === 'bot';
+            autoScrollToBottom(shouldForceScroll);
+        }
+
+        function autoScrollToBottom(force = false) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            // Check if user has manually scrolled up (unless forced)
+            if (!force) {
+                const scrollTop = messagesContainer.scrollTop;
+                const scrollHeight = messagesContainer.scrollHeight;
+                const clientHeight = messagesContainer.clientHeight;
+                const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+                
+                // If user has scrolled up, don't auto-scroll
+                if (!scrolledToBottom) {
+                    return;
+                }
+            }
+            
+            // Method 1: Direct scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Method 2: Use scrollIntoView for the last message
+            const lastMessage = messagesContainer.lastElementChild;
+            if (lastMessage) {
+                lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            
+            // Method 3: Multiple scroll attempts with different timings
+            const scrollToBottom = () => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+            
+            // Immediate scroll
+            scrollToBottom();
+            
+            // Delayed scrolls to handle any rendering delays
+            setTimeout(scrollToBottom, 10);
+            setTimeout(scrollToBottom, 50);
+            setTimeout(scrollToBottom, 100);
+            setTimeout(scrollToBottom, 200);
+            setTimeout(scrollToBottom, 300);
+            
+            // Use requestAnimationFrame for smooth scrolling
+            requestAnimationFrame(() => {
+                scrollToBottom();
+                requestAnimationFrame(() => {
+                    scrollToBottom();
+                });
+            });
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            
+            // Use enhanced auto-scroll for typing indicator (force scroll)
+            autoScrollToBottom(true);
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText || isLoading) return;
+            
+            const userMessage = {
+                text: messageText,
+                sender: 'user',
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            messages.push(userMessage);
+            displayMessage(userMessage);
+            
+            messageInput.value = '';
+            isLoading = true;
+            sendButton.disabled = true;
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                const responseText = generateResponse(messageText);
+                const botMessage = {
+                    text: responseText,
+                    sender: 'bot',
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                messages.push(botMessage);
+                displayMessage(botMessage);
+                
+                // Save conversation after bot response
+                saveCurrentConversation();
+                updateConversationsList();
+                
+                // Enhanced auto-scroll after bot response with extra delay (force scroll)
+                setTimeout(() => {
+                    autoScrollToBottom(true);
+                }, 100);
+                
+                isLoading = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }, 1000 + Math.random() * 1000);
+        }
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('messageInput').focus();
+            
+            // Add click event to logo for chibi popup
+            const logo = document.querySelector('.logo');
+            logo.addEventListener('click', showChibiMessage);
+            logo.style.cursor = 'pointer';
+        });
+
+        function showChibiMessage() {
+            // Prevent multiple popups
+            if (document.querySelector('.popup-chibi')) {
+                return;
+            }
+
+            // Create the popup chibi container
+            const popupChibi = document.createElement('div');
+            popupChibi.className = 'popup-chibi';
+            
+            // Create the chibi message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chibi-message';
+            messageDiv.textContent = 'If you think you\'re alone, just remember I\'m here, and always pray 🙏';
+            
+            // Create thought bubbles
+            const thoughtBubblesDiv = document.createElement('div');
+            thoughtBubblesDiv.className = 'thought-bubbles';
+            thoughtBubblesDiv.innerHTML = `
+                <div class="thought-bubble bubble-1"></div>
+                <div class="thought-bubble bubble-2"></div>
+                <div class="thought-bubble bubble-3"></div>
+            `;
+            
+            // Create the large chibi face
+            const largeChibiFace = document.createElement('div');
+            largeChibiFace.className = 'large-chibi-face';
+            largeChibiFace.innerHTML = `
+                <!-- Large chibi eyes -->
+                <div class="large-chibi-eyes">
+                    <div class="large-eye left-eye">
+                        <div class="large-pupil"></div>
+                        <div class="large-shine"></div>
+                    </div>
+                    <div class="large-eye right-eye">
+                        <div class="large-pupil"></div>
+                        <div class="large-shine"></div>
+                    </div>
+                </div>
+                
+                <!-- Large chibi mouth -->
+                <div class="large-chibi-mouth"></div>
+                
+                <!-- Large chibi cheeks -->
+                <div class="large-chibi-cheeks">
+                    <div class="large-cheek left"></div>
+                    <div class="large-cheek right"></div>
+                </div>
+            `;
+            
+            // Create sparkles around the chibi
+            const sparklesDiv = document.createElement('div');
+            sparklesDiv.className = 'popup-sparkles';
+            sparklesDiv.innerHTML = `
+                <div class="popup-sparkle sp1">✨</div>
+                <div class="popup-sparkle sp2">💫</div>
+                <div class="popup-sparkle sp3">⭐</div>
+                <div class="popup-sparkle sp4">🌟</div>
+                <div class="popup-sparkle sp5">✨</div>
+                <div class="popup-sparkle sp6">💖</div>
+            `;
+            
+            // Assemble the popup
+            popupChibi.appendChild(largeChibiFace);
+            popupChibi.appendChild(sparklesDiv);
+            
+            // Add to document
+            document.body.appendChild(messageDiv);
+            document.body.appendChild(thoughtBubblesDiv);
+            document.body.appendChild(popupChibi);
+            
+            // Add show class after a brief delay for animation
+            setTimeout(() => {
+                popupChibi.classList.add('show');
+            }, 10);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideChibiMessage(popupChibi, messageDiv, thoughtBubblesDiv);
+            }, 5000);
+            
+            // Allow manual hide by clicking the chibi
+            popupChibi.addEventListener('click', () => {
+                hideChibiMessage(popupChibi, messageDiv, thoughtBubblesDiv);
+            });
+        }
+
+        function hideChibiMessage(popupChibi, messageDiv, thoughtBubblesDiv) {
+            popupChibi.classList.add('hide');
+            
+            // Remove elements after animation completes
+            setTimeout(() => {
+                if (popupChibi && popupChibi.parentNode) {
+                    popupChibi.parentNode.removeChild(popupChibi);
+                }
+                if (messageDiv && messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+                if (thoughtBubblesDiv && thoughtBubblesDiv.parentNode) {
+                    thoughtBubblesDiv.parentNode.removeChild(thoughtBubblesDiv);
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html> 
